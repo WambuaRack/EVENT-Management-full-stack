@@ -46,26 +46,7 @@ Database: SQLite (default, can be changed to PostgreSQL)
 
 Authentication: JWT Tokens
 
-Folder Structure
-event-management-web-app/
-├── backend/        # Django backend
-│   ├── manage.py
-│   ├── api/
-│   │   ├── models.py
-│   │   ├── serializers.py
-│   │   ├── views.py
-│   │   └── urls.py
-│   └── ...
-└── frontend/       # React frontend
-    ├── src/
-    │   ├── pages/
-    │   │   ├── UserDashboard.js
-    │   │   ├── ManagerDashboard.js
-    │   │   └── AdminDashboard.js
-    │   ├── context/
-    │   │   └── AuthContext.js
-    │   └── ...
-    └── package.json
+
 
 User Credentials
 Role	Username	Password
