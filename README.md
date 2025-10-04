@@ -121,7 +121,7 @@ Start the development server:
 npm start
 
 
-The frontend will run on http://localhost:3000 and connect to the backend API at http://127.0.0.1:8000/api.
+The frontend will run on http://localhost:3000 and connect to the backend API at http://127.0.0.1:8000/.
 
 Notes
 
