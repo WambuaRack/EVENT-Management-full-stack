@@ -1,0 +1,155 @@
+Events Management Web App
+
+A full-stack web application for managing events, including role-based dashboards for Users, Managers, and Admins, with RSVP functionality, JWT authentication, and event visibility control.
+
+Table of Contents
+
+Features
+
+Tech Stack
+
+Getting Started
+
+Folder Structure
+
+User Credentials
+
+API Endpoints
+
+Running the Project
+
+License
+
+Features
+
+User Dashboard: View public events and RSVP.
+
+Manager Dashboard: Create, edit, delete events, and view RSVPs.
+
+Admin Dashboard: Manage users, view all events and RSVPs.
+
+Role-Based Access Control: Users, Managers, and Admins have separate views.
+
+RSVP Functionality: Users can RSVP or cancel RSVP for events.
+
+Event Visibility: Events can be public or private.
+
+JWT Authentication: Secure login with role-based claims.
+
+Tech Stack
+
+Frontend: React, Axios, Context API
+
+Backend: Django, Django REST Framework, Simple JWT
+
+Database: SQLite (default, can be changed to PostgreSQL)
+
+Authentication: JWT Tokens
+
+Folder Structure
+event-management-web-app/
+├── backend/        # Django backend
+│   ├── manage.py
+│   ├── api/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── views.py
+│   │   └── urls.py
+│   └── ...
+└── frontend/       # React frontend
+    ├── src/
+    │   ├── pages/
+    │   │   ├── UserDashboard.js
+    │   │   ├── ManagerDashboard.js
+    │   │   └── AdminDashboard.js
+    │   ├── context/
+    │   │   └── AuthContext.js
+    │   └── ...
+    └── package.json
+
+User Credentials
+Role	Username	Password
+Admin	admin1	AdminPassword@123
+Manager	Bellow	Bellow@12345
+User	blue	1234567890
+
+Note: You can create additional users through the Admin Dashboard or via API.
+
+API Endpoints
+
+User Registration: POST /api/register/
+
+JWT Token: POST /api/token/
+
+Events: GET /api/events/, POST /api/events/, PATCH/PUT/DELETE /api/events/<id>/
+
+RSVP: POST /api/events/<id>/rsvp/, DELETE /api/events/<id>/rsvp/
+
+User Management (Admin): GET /api/users/, POST /api/users/, PATCH/DELETE /api/users/<id>/
+
+Getting Started
+Prerequisites
+
+Node.js & npm
+
+Python 3.10+
+
+pip or pipenv/venv
+
+Backend Setup
+
+Navigate to the backend folder:
+
+cd backend
+
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+
+Apply migrations:
+
+python manage.py makemigrations
+python manage.py migrate
+
+
+Create a superuser (optional for admin login):
+
+python manage.py createsuperuser
+
+
+Start the backend server:
+
+python manage.py runserver
+
+Frontend Setup
+
+Navigate to the frontend folder:
+
+cd frontend
+
+
+Install dependencies:
+
+npm install
+
+
+Start the development server:
+
+npm start
+
+
+The frontend will run on http://localhost:3000 and connect to the backend API at http://127.0.0.1:8000/api.
+
+Notes
+
+To maintain separate sessions for different roles in multiple tabs, the app uses sessionStorage.
+
+JWT tokens are stored in localStorage; ensure they are valid before performing any actions.
+
+If you get CORS issues, install django-cors-headers and configure it in settings.py.
+
+License
+
+This project is MIT Licensed. You are free to use and modify it.
