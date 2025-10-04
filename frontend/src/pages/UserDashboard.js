@@ -2,75 +2,30 @@ import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-const API_URL = "http://127.0.0.1:8000/api";
-
 const UserDashboard = () => {
   const { user } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const token = localStorage.getItem("access");
 
-  // Fetch events
+  const token = sessionStorage.getItem("access");
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  // Fetch events (only public)
   const fetchEvents = async () => {
     try {
-      const response = await axios.get(`${API_URL}/events/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const eventsData = Array.isArray(response.data)
-        ? response.data
-        : response.data.results || [];
-
-      setEvents(eventsData);
-      setLoading(false);
+      const res = await axios.get("http://127.0.0.1:8000/api/events/", { headers });
+      const allEvents = Array.isArray(res.data) ? res.data : res.data.results || [];
+      const publicEvents = allEvents.filter((event) => event.is_public === true);
+      setEvents(publicEvents);
     } catch (err) {
       console.error(err);
       setError("Failed to load events");
+    } finally {
       setLoading(false);
-    }
-  };
-
-  // RSVP handler
-  const handleRsvp = async (eventId, isRsvped) => {
-    if (!user || !token) {
-      alert("You must be logged in to RSVP.");
-      return;
-    }
-
-    const endpoint = `${API_URL}/events/${eventId}/rsvp/`;
-
-    try {
-      // Optimistic UI update
-      setEvents(prev =>
-        prev.map(e =>
-          e.id === eventId ? { ...e, is_rsvped: !isRsvped, is_updating: true } : e
-        )
-      );
-
-      if (!isRsvped) {
-        await axios.post(endpoint, {}, { headers: { Authorization: `Bearer ${token}` } });
-        alert("RSVP successful!");
-      } else {
-        await axios.delete(endpoint, { headers: { Authorization: `Bearer ${token}` } });
-        alert("RSVP canceled.");
-      }
-
-      setEvents(prev =>
-        prev.map(e =>
-          e.id === eventId ? { ...e, is_rsvped: !isRsvped, is_updating: false } : { ...e, is_updating: false }
-        )
-      );
-    } catch (err) {
-      console.error("RSVP failed:", err.response || err);
-      alert(`Action failed: ${err.response?.data?.detail || "Could not complete action."}`);
-
-      // Revert optimistic update on failure
-      setEvents(prev =>
-        prev.map(e =>
-          e.id === eventId ? { ...e, is_rsvped: isRsvped, is_updating: false } : e
-        )
-      );
     }
   };
 
@@ -78,96 +33,189 @@ const UserDashboard = () => {
     if (user) fetchEvents();
   }, [user]);
 
-  if (!user) return <p>Please log in to view your dashboard.</p>;
-  if (loading) return <p>Loading events...</p>;
-  if (error) return <p>{error}</p>;
+  if (!user) return <p className="message">Please log in.</p>;
+  if (loading) return <p className="message">Loading public events...</p>;
+  if (error) return <p className="message error">{error}</p>;
 
   return (
-    <div className="dashboard-container">
-      <h1>Welcome, {user.username}!</h1>
-      <p className="dashboard-subtitle">Your upcoming events:</p>
+    <div className="user-dashboard">
+      <h1>Welcome, {user.username}</h1>
+      <h2>Public Events</h2>
 
       {events.length === 0 ? (
-        <div className="no-events-message">No events are currently scheduled.</div>
+        <p className="message">No public events available</p>
       ) : (
         <div className="events-grid">
-          {events.map(event => {
-            const isRsvped = event.is_rsvped;
-            const isUpdating = event.is_updating;
-
-            return (
-              <div key={event.id} className={`event-card ${event.is_public ? "is-public" : "is-private"}`}>
-                <h2>{event.title}</h2>
-                <p className="event-description">{event.description}</p>
-
-                <div className="event-details">
-                  <p><strong>Location:</strong> {event.location || "N/A"}</p>
-                  <p><strong>Start Time:</strong> {new Date(event.start_time).toLocaleString()}</p>
-                  <p><strong>End Time:</strong> {new Date(event.end_time).toLocaleString()}</p>
-                </div>
-
-                {/* RSVP Button */}
-                <div className="rsvp-actions">
-                  <button
-                    onClick={() => handleRsvp(event.id, isRsvped)}
-                    disabled={isUpdating}
-                    className={`rsvp-button ${isRsvped ? "rsvped" : "not-rsvped"}`}
-                  >
-                    {isUpdating ? (isRsvped ? "Canceling..." : "RSVPing...") : (isRsvped ? "Cancel RSVP" : "RSVP Now")}
-                  </button>
-                  <p className="rsvped-status">
-                    Status: <span className={isRsvped ? "public-yes" : "public-no"}>{isRsvped ? " Registered" : " Not Registered"}</span>
-                  </p>
-                </div>
-
-                <p className="public-status">
-                  <strong>Visibility:</strong> <span className={event.is_public ? "public-yes" : "public-no"}>{event.is_public ? "Public" : "Private"}</span>
-                </p>
-              </div>
-            );
-          })}
+          <div className="table-header">
+            <span>Title</span>
+            <span>Description</span>
+            <span>Location</span>
+            <span>Start</span>
+            <span>End</span>
+          </div>
+          {events.map((event) => (
+            <div key={event.id} className="event-card">
+              <span>{event.title}</span>
+              <span>{event.description}</span>
+              <span>{event.location}</span>
+              <span>{new Date(event.start_time).toLocaleString()}</span>
+              <span>{new Date(event.end_time).toLocaleString()}</span>
+            </div>
+          ))}
         </div>
       )}
 
+      {/* CSS */}
       <style jsx>{`
-        .dashboard-container {
+        .user-dashboard {
           max-width: 1200px;
           margin: 0 auto;
           padding: 40px 20px;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          color: #333;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: #f5f7fa;
           min-height: 100vh;
-          background: linear-gradient(to bottom right, #f0f4f8, #e5ebf1);
+          color: #1a202c;
         }
 
-        h1 { text-align: center; color: #007bff; }
-        .dashboard-subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        h1 {
+          text-align: center;
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+          color: #2d3748;
+          letter-spacing: -0.025em;
+        }
 
-        .no-events-message { text-align: center; padding: 30px; border: 1px dashed #a0a0a0; border-radius: 8px; color: #555; font-style: italic; background: #fff; }
+        h2 {
+          text-align: center;
+          font-size: 1.75rem;
+          font-weight: 600;
+          margin-bottom: 2rem;
+          color: #4a5568;
+        }
 
-        .events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .message {
+          text-align: center;
+          font-size: 1.125rem;
+          color: #4a5568;
+          padding: 1.5rem;
+          background: #edf2f7;
+          border-radius: 8px;
+          margin: 1rem 0;
+        }
 
-        .event-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.1); transition: transform 0.2s; display: flex; flex-direction: column; }
-        .event-card:hover { transform: translateY(-5px); }
-        .event-card h2 { margin-top: 0; margin-bottom: 10px; }
-        .event-description { margin-bottom: 15px; color: #555; }
+        .message.error {
+          color: #e53e3e;
+          background: #fff5f5;
+        }
 
-        .rsvp-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px dashed #f0f0f0; padding-top: 10px; }
-        .rsvp-button { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; min-width: 120px; }
-        .rsvp-button:disabled { cursor: not-allowed; opacity: 0.6; }
-        .rsvp-button.not-rsvped { background-color: #007bff; color: white; }
-        .rsvp-button.rsvped { background-color: #dc3545; color: white; }
-        .rsvped-status span.public-yes { font-weight: bold; color: #1e7e34; }
-        .rsvped-status span.public-no { font-weight: bold; color: #b8001d; }
+        .events-grid {
+          display: grid;
+          gap: 1rem;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          overflow: hidden;
+        }
 
-        .public-status { padding-top: 10px; margin-top: 10px; border-top: 1px solid #f0f0f0; }
-        .public-yes { background-color: #d4edda; padding: 3px 8px; border-radius: 4px; font-weight: bold; color: #1e7e34; }
-        .public-no { background-color: #f8d7da; padding: 3px 8px; border-radius: 4px; font-weight: bold; color: #b8001d; }
+        .table-header {
+          display: grid;
+          grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr;
+          background: #2b6cb0;
+          color: white;
+          font-weight: 600;
+          padding: 1rem;
+          text-transform: uppercase;
+          font-size: 0.875rem;
+          letter-spacing: 0.05em;
+          border-bottom: 2px solid #2c5282;
+        }
 
-        .event-card.is-public { border-left: 5px solid #28a745; }
-        .event-card.is-private { border-left: 5px solid #dc3545; }
+        .event-card {
+          display: grid;
+          grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr;
+          padding: 1.25rem;
+          background: #ffffff;
+          border-bottom: 1px solid #edf2f7;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
 
-        @media (max-width: 600px) { .events-grid { grid-template-columns: 1fr; } }
+        .event-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+          background: #f7fafc;
+        }
+
+        .event-card span {
+          font-size: 0.95rem;
+          color: #2d3748;
+          padding: 0.5rem;
+          display: flex;
+          align-items: center;
+        }
+
+        .event-card span:first-child {
+          font-weight: 600;
+          color: #2b6cb0;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+          .events-grid {
+            gap: 0.5rem;
+          }
+
+          .table-header {
+            display: none;
+          }
+
+          .event-card {
+            grid-template-columns: 1fr;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          }
+
+          .event-card span {
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            position: relative;
+          }
+
+          .event-card span::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #4a5568;
+            margin-right: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+          }
+
+          .event-card span:nth-child(1)::before { content: "Title"; }
+          .event-card span:nth-child(2)::before { content: "Description"; }
+          .event-card span:nth-child(3)::before { content: "Location"; }
+          .event-card span:nth-child(4)::before { content: "Start"; }
+          .event-card span:nth-child(5)::before { content: "End"; }
+        }
+
+        @media (max-width: 600px) {
+          h1 {
+            font-size: 2rem;
+          }
+
+          h2 {
+            font-size: 1.5rem;
+          }
+
+          .event-card {
+            padding: 0.75rem;
+          }
+
+          .event-card span {
+            font-size: 0.85rem;
+          }
+        }
       `}</style>
     </div>
   );
