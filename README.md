@@ -50,8 +50,8 @@ Authentication: JWT Tokens
 
 User Credentials
 Role	Username	Password
-Admin	admin1	AdminPassword@123
-Manager	Bellow	Bellow@12345
+Admin	wambua	1234567890
+Manager	red   	1234567890
 User	blue	1234567890
 
 Note: You can create additional users through the Admin Dashboard or via API.
@@ -95,9 +95,6 @@ python manage.py makemigrations
 python manage.py migrate
 
 
-Create a superuser (optional for admin login):
-
-python manage.py createsuperuser
 
 
 Start the backend server:
@@ -134,3 +131,5 @@ If you get CORS issues, install django-cors-headers and configure it in settings
 License
 
 This project is MIT Licensed. You are free to use and modify it.
+
+please follow me in github, wambuarack, Asante.
