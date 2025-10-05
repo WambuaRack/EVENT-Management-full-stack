@@ -49,7 +49,6 @@ export default function Login() {
         />
         <button type="submit">Login</button>
         <p className="register-prompt">
-          Don't have an account? <Link to="/register">Register</Link>
         </p>
       </form>
 
