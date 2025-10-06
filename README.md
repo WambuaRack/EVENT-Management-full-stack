@@ -24,13 +24,12 @@ Features
 
 User Dashboard: View public events and RSVP.
 
-Manager Dashboard: Create, edit, delete events, and view RSVPs.
+Manager Dashboard: Create, edit, delete events
 
-Admin Dashboard: Manage users, view all events and RSVPs.
+Admin Dashboard: Manage users, view all events 
 
 Role-Based Access Control: Users, Managers, and Admins have separate views.
 
-RSVP Functionality: Users can RSVP or cancel RSVP for events.
 
 Event Visibility: Events can be public or private.
 
@@ -64,7 +63,6 @@ JWT Token: POST /api/token/
 
 Events: GET /api/events/, POST /api/events/, PATCH/PUT/DELETE /api/events/<id>/
 
-RSVP: POST /api/events/<id>/rsvp/, DELETE /api/events/<id>/rsvp/
 
 User Management (Admin): GET /api/users/, POST /api/users/, PATCH/DELETE /api/users/<id>/
 
