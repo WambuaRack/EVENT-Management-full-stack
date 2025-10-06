@@ -1,6 +1,6 @@
 Events Management Web App
 
-A full-stack web application for managing events, including role-based dashboards for Users, Managers, and Admins, with RSVP functionality, JWT authentication, and event visibility control.
+A full-stack web application for managing events, including role-based dashboards for Users, Managers, and Admins, JWT authentication, and event visibility control.
 
 Table of Contents
 
